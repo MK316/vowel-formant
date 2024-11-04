@@ -18,7 +18,7 @@ data = {
 
 df = pd.DataFrame(data)
 
-# Function to plot vowel chart for selected data
+# Function to plot vowel chart for selected data with consistent axes
 def plot_vowel_chart(df, gender):
     F1 = df[f"{gender}_F1"]
     F2 = df[f"{gender}_F2"]
@@ -29,6 +29,10 @@ def plot_vowel_chart(df, gender):
     plt.scatter(F2, F1, color='blue', s=100)
     for i, vowel in enumerate(vowels):
         plt.text(F2[i] + 30, F1[i] + 30, vowel, fontsize=12, ha='center')
+
+    # Set consistent axes limits for all plots
+    plt.xlim(800, 3300)  # F2 range (right-to-left for vowel plots)
+    plt.ylim(200, 1100)  # F1 range (top-to-bottom for vowel plots)
 
     # Reverse axes as per common vowel chart convention
     plt.gca().invert_xaxis()
