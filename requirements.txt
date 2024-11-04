@@ -1,4 +1,4 @@
-streamlit==1.23.1
-numpy==1.23.5
-matplotlib==3.7.1
-praat-parselmouth==0.4.0  # Remove or comment out if it still causes issues
+streamlit
+numpy
+matplotlib
+praat-parselmouth
