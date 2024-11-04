@@ -1,65 +1,52 @@
 import streamlit as st
-import numpy as np
-import matplotlib.pyplot as plt
-import librosa
-import parselmouth  # For formant extraction using Praat
+import parselmouth
 from parselmouth.praat import call
+import matplotlib.pyplot as plt
+import numpy as np
 
+st.title("Formant Analysis App")
+st.write("Upload an audio file to analyze the first two formants (F1 and F2).")
+
+# Step 1: Function to Extract Formants
 def extract_formants(audio_path):
-    """Extracts the first two formants (F1, F2) for each word."""
     sound = parselmouth.Sound(audio_path)
-    formants = []
+    formant = call(sound, "To Formant (burg)", 0.0, 5.0, 5500, 0.025, 50)
     
-    # Parameters for extracting formants - adjust as needed
-    max_formant = 5500
-    formant_object = call(sound, "To Formant (burg)", 0.025, 5, max_formant, 0.03, 50)
+    # Extract the first two formants at the midpoint of the sound
+    f1 = call(formant, "Get value at time", 1, 0.5, "Hertz", "Linear")
+    f2 = call(formant, "Get value at time", 2, 0.5, "Hertz", "Linear")
     
-    # Extract formants for each 1-second slice (assuming each word is isolated and 1-second)
-    for i in range(9):
-        time = i  # Adjust timing if needed
-        f1 = call(formant_object, "Get value at time", 1, time, 'Hertz', 'Linear')
-        f2 = call(formant_object, "Get value at time", 2, time, 'Hertz', 'Linear')
-        formants.append((f1, f2))
-    return formants
+    return f1, f2
 
+# Step 2: Formant Plotting Function
 def plot_formants(formants):
-    """Plot formants in a 2D space."""
-    f1_values = [f[0] for f in formants]
-    f2_values = [f[1] for f in formants]
-
-    # Create plot with inverted axes for F1 and F2
     plt.figure(figsize=(6, 6))
-    plt.scatter(f2_values, f1_values)
+    plt.xlim(200, 2000)  # Typical F1 range
+    plt.ylim(500, 3000)  # Typical F2 range
+    plt.xlabel("F1 (Hz)")
+    plt.ylabel("F2 (Hz)")
+    plt.gca().invert_yaxis()  # Invert y-axis for phonetic visualization
+
+    # Plot each formant with numbering 1-9
+    for idx, (f1, f2) in enumerate(formants, start=1):
+        plt.plot(f1, f2, 'bo')
+        plt.text(f1, f2, str(idx), fontsize=12, ha='center', color="red")
     
-    # Number each formant point from 1 to 9
-    for i, (f2, f1) in enumerate(formants):
-        plt.text(f2, f1, str(i + 1), ha='center', va='center', color='red', fontsize=12)
-    
-    plt.gca().invert_yaxis()  # Invert y-axis for F1
-    plt.gca().invert_xaxis()  # Invert x-axis for F2
-    plt.xlabel("F2 Frequency (Hz)")
-    plt.ylabel("F1 Frequency (Hz)")
-    plt.title("Formant Plot of Recorded Words")
     st.pyplot(plt)
 
-# Streamlit UI
-st.title("Formant Extraction for Recorded Words")
+# Step 3: Upload and Process Audio File
+uploaded_files = st.file_uploader("Upload your audio files (9 words)", accept_multiple_files=True, type=["wav", "mp3"])
 
-st.write("Record and upload 9 one-syllable words to analyze their formants.")
-
-# File uploader for 9 recordings
-uploaded_files = st.file_uploader("Upload 9 audio files (one per word)", type=["wav", "mp3"], accept_multiple_files=True)
-
-if len(uploaded_files) == 9:
+if uploaded_files and len(uploaded_files) == 9:
+    st.success("9 audio files uploaded successfully! Processing...")
+    
+    # Extract and store formants for each file
     formants = []
     for file in uploaded_files:
-        with open(file.name, "wb") as f:
-            f.write(file.getbuffer())
-        word_formants = extract_formants(file.name)
-        formants.extend(word_formants)
+        f1, f2 = extract_formants(file)
+        formants.append((f1, f2))
     
-    if formants:
-        st.success("Formants extracted successfully!")
-        plot_formants(formants)
+    # Step 4: Plot Formants
+    plot_formants(formants)
 else:
     st.warning("Please upload exactly 9 audio files.")
