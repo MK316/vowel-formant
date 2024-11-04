@@ -35,7 +35,7 @@ with tab2:
 
         # Create the dot plot
         plt.figure(figsize=(10, 8))
-        plt.scatter(data["F2"], data["F1"], color='blue', s=50)
+        plt.scatter(data["F2"], data["F1"], color='blue', s=100)  # Increased size of dots for better visibility
 
         # Reverse axes as specified
         plt.gca().invert_xaxis()  # F2 increases from right to left
@@ -46,9 +46,9 @@ with tab2:
         plt.ylabel("F1")
         plt.title("Dot Plot of F1 vs F2 with Word Labels")
 
-        # Display the word labels next to each point
+        # Display the word labels with offset and increased font size
         for i, row in data.iterrows():
-            plt.text(row["F2"], row["F1"], row["word"], fontsize=9, ha='right')
+            plt.text(row["F2"] + 30, row["F1"] + 30, row["word"], fontsize=12, ha='left', color='black')  # Offset and font size adjustment
 
         # Display the plot in Streamlit
         st.pyplot(plt)
