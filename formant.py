@@ -15,24 +15,35 @@ data = {
 
 df = pd.DataFrame(data)
 
-# Function to plot vowel chart with overlays for all genders
-def plot_overlay_vowel_chart(df):
+# Initialize session state to keep track of displayed genders
+if 'show_men' not in st.session_state:
+    st.session_state['show_men'] = False
+if 'show_women' not in st.session_state:
+    st.session_state['show_women'] = False
+if 'show_children' not in st.session_state:
+    st.session_state['show_children'] = False
+
+# Function to plot vowel chart with overlays for selected genders
+def plot_vowel_chart(df):
     plt.figure(figsize=(8, 6))
 
-    # Plot for Men
-    plt.scatter(df["Men_F2"], df["Men_F1"], color='blue', s=100, label='Men')
-    for i, vowel in enumerate(df["Vowel"]):
-        plt.text(df["Men_F2"][i] + 30, df["Men_F1"][i] + 30, vowel, color='blue', fontsize=10, ha='center')
+    # Plot for Men if selected
+    if st.session_state['show_men']:
+        plt.scatter(df["Men_F2"], df["Men_F1"], color='blue', s=100, label='Men')
+        for i, vowel in enumerate(df["Vowel"]):
+            plt.text(df["Men_F2"][i] + 30, df["Men_F1"][i] + 30, vowel, color='blue', fontsize=10, ha='center')
 
-    # Plot for Women
-    plt.scatter(df["Women_F2"], df["Women_F1"], color='green', s=100, label='Women')
-    for i, vowel in enumerate(df["Vowel"]):
-        plt.text(df["Women_F2"][i] + 30, df["Women_F1"][i] + 30, vowel, color='green', fontsize=10, ha='center')
+    # Plot for Women if selected
+    if st.session_state['show_women']:
+        plt.scatter(df["Women_F2"], df["Women_F1"], color='green', s=100, label='Women')
+        for i, vowel in enumerate(df["Vowel"]):
+            plt.text(df["Women_F2"][i] + 30, df["Women_F1"][i] + 30, vowel, color='green', fontsize=10, ha='center')
 
-    # Plot for Children
-    plt.scatter(df["Children_F2"], df["Children_F1"], color='red', s=100, label='Children')
-    for i, vowel in enumerate(df["Vowel"]):
-        plt.text(df["Children_F2"][i] + 30, df["Children_F1"][i] + 30, vowel, color='red', fontsize=10, ha='center')
+    # Plot for Children if selected
+    if st.session_state['show_children']:
+        plt.scatter(df["Children_F2"], df["Children_F1"], color='red', s=100, label='Children')
+        for i, vowel in enumerate(df["Vowel"]):
+            plt.text(df["Children_F2"][i] + 30, df["Children_F1"][i] + 30, vowel, color='red', fontsize=10, ha='center')
 
     # Set consistent axes limits for all plots
     plt.xlim(800, 3300)  # F2 range (right-to-left for vowel plots)
@@ -44,15 +55,24 @@ def plot_overlay_vowel_chart(df):
 
     plt.xlabel("F2")
     plt.ylabel("F1")
-    plt.title("Overlay Vowel Chart for Men, Women, and Children")
+    plt.title("Overlay Vowel Chart")
     plt.legend()
     st.pyplot(plt)
 
 # Streamlit app layout
 st.title("Overlay Vowel Chart Comparison")
 
-st.write("This plot overlays the vowel formants for Men, Women, and Children.")
+st.write("Click the buttons below to add each group's vowel data to the plot.")
 
-# Button to display overlay plot
-if st.button("Show Overlay Vowel Chart"):
-    plot_overlay_vowel_chart(df)
+# Buttons to add each group's vowel data to the plot
+if st.button("Add Men's Data"):
+    st.session_state['show_men'] = True
+
+if st.button("Add Women's Data"):
+    st.session_state['show_women'] = True
+
+if st.button("Add Children's Data"):
+    st.session_state['show_children'] = True
+
+# Display the vowel chart with the selected overlays
+plot_vowel_chart(df)
