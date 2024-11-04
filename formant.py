@@ -2,56 +2,57 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 
-# Tab names
-tab1, tab2 = st.tabs(["Upload CSV", "F1 vs F2 Plot"])
+# Create DataFrame with the formant values from the image
+data = {
+    "Vowel": ["i", "ɪ", "ɛ", "æ", "ɑ", "ɔ", "ʊ", "u", "ʌ", "ɝ"],
+    "Men_F1": [270, 400, 530, 660, 730, 570, 440, 300, 640, 490],
+    "Men_F2": [2300, 2000, 1850, 1700, 1100, 850, 1000, 850, 1200, 1350],
+    "Men_F3": [3000, 2550, 2500, 2400, 2450, 2500, 2250, 2250, 2400, 1700],
+    "Women_F1": [300, 430, 600, 860, 850, 590, 470, 370, 760, 500],
+    "Women_F2": [2800, 2500, 2350, 2050, 1200, 850, 1150, 950, 1400, 1650],
+    "Women_F3": [3300, 3100, 3000, 2850, 1200, 2700, 2650, 2450, 2600, 1950],
+    "Children_F1": [370, 530, 700, 1000, 1030, 680, 560, 430, 850, 560],
+    "Children_F2": [3200, 2750, 2600, 2300, 1350, 950, 1400, 1150, 1600, 1650],
+    "Children_F3": [3700, 3600, 3550, 3300, 3200, 3050, 3250, 3250, 3350, 2150]
+}
 
-# Tab 1 - Upload CSV file
-with tab1:
-    st.header("Upload CSV File")
-    st.write("Please upload a CSV file with three columns: `F1`, `F2`, and `word`.")
+df = pd.DataFrame(data)
 
-    # File uploader
-    uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
+# Function to plot vowel chart for selected data
+def plot_vowel_chart(df, gender):
+    F1 = df[f"{gender}_F1"]
+    F2 = df[f"{gender}_F2"]
+    vowels = df["Vowel"]
 
-    # Load and display the data if a file is uploaded
-    if uploaded_file is not None:
-        data = pd.read_csv(uploaded_file)
+    # Create plot
+    plt.figure(figsize=(8, 6))
+    plt.scatter(F2, F1, color='blue', s=100)
+    for i, vowel in enumerate(vowels):
+        plt.text(F2[i] + 30, F1[i] + 30, vowel, fontsize=12, ha='center')
 
-        # Ensure the CSV contains 'F1', 'F2', and 'word' columns
-        if {"F1", "F2", "word"}.issubset(data.columns):
-            st.success("File successfully uploaded.")
-            st.dataframe(data)  # Display the data for verification
-            st.session_state['data'] = data  # Store the data in session state
-        else:
-            st.error("The uploaded CSV file must contain columns `F1`, `F2`, and `word`.")
+    # Reverse axes as per common vowel chart convention
+    plt.gca().invert_xaxis()
+    plt.gca().invert_yaxis()
 
-# Tab 2 - Plot F1 vs F2
-with tab2:
-    st.header("Dot Plot of F1 vs F2 with Word Labels")
+    plt.xlabel("F2")
+    plt.ylabel("F1")
+    plt.title(f"Vowel Chart for {gender}")
+    st.pyplot(plt)
 
-    # Check if data is available in session state
-    if 'data' in st.session_state:
-        data = st.session_state['data']
+# Streamlit app layout
+st.title("Interactive Vowel Chart")
 
-        # Create the dot plot
-        plt.figure(figsize=(10, 8))
-        plt.scatter(data["F2"], data["F1"], color='blue', s=100)  # Increased size of dots for better visibility
+st.write("Select a gender to view the corresponding vowel formant chart.")
 
-        # Reverse axes as specified
-        plt.gca().invert_xaxis()  # F2 increases from right to left
-        plt.gca().invert_yaxis()  # F1 increases from top to bottom
+# Buttons for each gender
+if st.button("Men"):
+    st.subheader("Vowel Chart for Men")
+    plot_vowel_chart(df, "Men")
 
-        # Add labels and title
-        plt.xlabel("F2")
-        plt.ylabel("F1")
-        plt.ylim(800,200)
-        plt.title("Dot Plot of F1 vs F2 with Word Labels")
+if st.button("Women"):
+    st.subheader("Vowel Chart for Women")
+    plot_vowel_chart(df, "Women")
 
-        # Display the word labels with offset and increased font size
-        for i, row in data.iterrows():
-            plt.text(row["F2"] + 30, row["F1"] + 30, row["word"], fontsize=12, ha='left', color='black')  # Offset and font size adjustment
-
-        # Display the plot in Streamlit
-        st.pyplot(plt)
-    else:
-        st.write("Please upload a CSV file in the 'Upload CSV' tab.")
+if st.button("Children"):
+    st.subheader("Vowel Chart for Children")
+    plot_vowel_chart(df, "Children")
