@@ -1,6 +1,6 @@
 streamlit==1.23.1  # Ensure compatibility with your version
 numpy==1.23.5
 matplotlib==3.7.1
-librosa==0.9.2  # Optional, if using librosa for additional audio processing
+librosa
 praat-parselmouth==0.4.0
 
