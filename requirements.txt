@@ -1,6 +1,6 @@
-streamlit==1.23.1  # Ensure compatibility with your version
+streamlit==1.23.1
+librosa==0.10.0.post2
 numpy==1.23.5
 matplotlib==3.7.1
-librosa
-praat-parselmouth==0.4.0
-
+scipy==1.9.3
+soundfile==0.10.3.post1
