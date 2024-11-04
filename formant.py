@@ -1,52 +1,52 @@
 import streamlit as st
-import parselmouth
-from parselmouth.praat import call
+import pandas as pd
 import matplotlib.pyplot as plt
-import numpy as np
 
-st.title("Formant Analysis App")
-st.write("Upload an audio file to analyze the first two formants (F1 and F2).")
+# Tab names
+tab1, tab2 = st.tabs(["Upload CSV", "F1 vs F2 Plot"])
 
-# Step 1: Function to Extract Formants
-def extract_formants(audio_path):
-    sound = parselmouth.Sound(audio_path)
-    formant = call(sound, "To Formant (burg)", 0.0, 5.0, 5500, 0.025, 50)
-    
-    # Extract the first two formants at the midpoint of the sound
-    f1 = call(formant, "Get value at time", 1, 0.5, "Hertz", "Linear")
-    f2 = call(formant, "Get value at time", 2, 0.5, "Hertz", "Linear")
-    
-    return f1, f2
+# Tab 1 - Upload CSV file
+with tab1:
+    st.header("Upload CSV File")
+    st.write("Please upload a CSV file with two columns: `F1` and `F2`.")
 
-# Step 2: Formant Plotting Function
-def plot_formants(formants):
-    plt.figure(figsize=(6, 6))
-    plt.xlim(200, 2000)  # Typical F1 range
-    plt.ylim(500, 3000)  # Typical F2 range
-    plt.xlabel("F1 (Hz)")
-    plt.ylabel("F2 (Hz)")
-    plt.gca().invert_yaxis()  # Invert y-axis for phonetic visualization
+    # File uploader
+    uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
 
-    # Plot each formant with numbering 1-9
-    for idx, (f1, f2) in enumerate(formants, start=1):
-        plt.plot(f1, f2, 'bo')
-        plt.text(f1, f2, str(idx), fontsize=12, ha='center', color="red")
-    
-    st.pyplot(plt)
+    # Load and display the data if a file is uploaded
+    if uploaded_file is not None:
+        data = pd.read_csv(uploaded_file)
 
-# Step 3: Upload and Process Audio File
-uploaded_files = st.file_uploader("Upload your audio files (9 words)", accept_multiple_files=True, type=["wav", "mp3"])
+        # Ensure the CSV contains 'F1' and 'F2' columns
+        if "F1" in data.columns and "F2" in data.columns:
+            st.success("File successfully uploaded.")
+            st.dataframe(data)  # Display the data for verification
+            st.session_state['data'] = data  # Store the data in session state
+        else:
+            st.error("The uploaded CSV file must contain columns `F1` and `F2`.")
 
-if uploaded_files and len(uploaded_files) == 9:
-    st.success("9 audio files uploaded successfully! Processing...")
-    
-    # Extract and store formants for each file
-    formants = []
-    for file in uploaded_files:
-        f1, f2 = extract_formants(file)
-        formants.append((f1, f2))
-    
-    # Step 4: Plot Formants
-    plot_formants(formants)
-else:
-    st.warning("Please upload exactly 9 audio files.")
+# Tab 2 - Plot F1 vs F2
+with tab2:
+    st.header("Dot Plot of F1 vs F2")
+
+    # Check if data is available in session state
+    if 'data' in st.session_state:
+        data = st.session_state['data']
+
+        # Create the dot plot
+        plt.figure(figsize=(8, 6))
+        plt.scatter(data["F2"], data["F1"], color='blue', s=50)
+
+        # Reverse axes as specified
+        plt.gca().invert_xaxis()  # F2 increases from right to left
+        plt.gca().invert_yaxis()  # F1 increases from top to bottom
+
+        # Add labels and title
+        plt.xlabel("F2")
+        plt.ylabel("F1")
+        plt.title("Dot Plot of F1 vs F2")
+
+        # Display the plot in Streamlit
+        st.pyplot(plt)
+    else:
+        st.write("Please upload a CSV file in the 'Upload CSV' tab.")
