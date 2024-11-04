@@ -44,6 +44,7 @@ with tab2:
         # Add labels and title
         plt.xlabel("F2")
         plt.ylabel("F1")
+        plt.ylim(0,900)
         plt.title("Dot Plot of F1 vs F2 with Word Labels")
 
         # Display the word labels with offset and increased font size
